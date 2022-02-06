@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div>
+    {% for article in get_articles() %}
+    <hr>
+    <div>
+        <h1>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{article[0]}}"
+                    aria-expanded="false" aria-controls="collapse{{article[0]}}">
+                {{article[1]}}
+            </button>
+        </h1>
+        <div class="collapse collapse-horizontal pop_up" id="collapse{{article[0]}}"
+             aria-labelledby="heading{{article[0]}}">
+            <hr>
+            <div>
+                <h1>{{article[2]}}</h1>
+                <p>Комментарии:</p>
+                {% for comment in get_comments(article) %}
+                <h2>{{comment[1]}}</h2>
+                <p>{{comment[2]}}</p>
+
+                <h1>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{comment[0]}}"
+                            aria-expanded="false" aria-controls="collapse{{comment[0]}}">
+                        Редактировать комментарий
+                    </button>
+                </h1>
+                <div class="collapse collapse-horizontal pop_up" id="collapse{{comment[0]}}"
+                     aria-labelledby="heading{{comment[0]}}">
+                    <form method="POST" action="/redact_comment/{{comment[0]}}">
+                        <label for="title">Заголовок</label>
+                        <input name="title" type="text"><br>
+                        <label for="content">Комментарий</label>
+                        <input name="content" type="text">
+                        <input type="submit" value="Редактировать">
+                    </form>
+                </div>
+                <hr>
+
+                <form method="POST" action="/delete_comment/{{article[0]}}/{{comment[0]}}">
+                    <input type="submit" value="Удалить комментарий">
+                </form>
+                <hr>
+
+            </div>
+
+            <div>
+
+                {% endfor %}
+                <div>
+                    <p><strong>Добавить комментарий:</strong></p>
+                    <form method="POST" action="/add_comment/{{article[0]}}">
+                        <label for="title">Заголовок</label>
+                        <input name="title" type="text"><br>
+                        <label for="content">Комментарий</label>
+                        <input name="content" type="text">
+                        <input type="submit" value="Добавить">
+                    </form>
+                </div>
+                <hr>
+                <div>
+                    <form method="POST" action="/delete_post/{{article[0]}}">
+                        <input type="submit" , value="Удалить пост">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</div>
+<hr>
+<div>
+    <p><strong>Добавить запись</strong></p>
+    <form method="POST" , action="add_post">
+        <label for="title">Название</label>
+        <input name="title" type="text"><br>
+        <label for="content">Содержание</label>
+        <input name="content" type="text">
+        <input type="submit" value="Отправить">
+    </form>
+</div>
+
+{% endblock %}
