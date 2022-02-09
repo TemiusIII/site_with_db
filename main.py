@@ -1,11 +1,10 @@
-import sqlite3
-from flask import Flask, request, render_template, redirect, url_for
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-from interface_methods import *
-from User import User
+import flask_login
+from flask import Flask, request, render_template, redirect
+from flask_login import LoginManager, login_user, login_required, logout_user
 
+from User import User
 from forms.LoginForm import LoginForm
+from interface_methods import *
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "matinf-secret"
@@ -41,13 +40,20 @@ def login():
             print(password, given_password)
     return render_template("login.html", form=form)
 
+
 @app.route("/register", methods=["GET", "POST"])
-def add__user():
-    if request.form['login'] not in get_logins():
-        add_user(request.form['login'], request.form['password'])
-    else:
-        print("User already exists")
-    return redirect('/')
+def register():
+    form = LoginForm()
+    if form.validate_on_submit():
+        login = form.login.data
+        given_password = form.password.data
+        if not user_exists(get_id(login)):
+            add_user(login, given_password)
+            print("Success")
+            return redirect("/")
+        else:
+            print("user exists")
+    return render_template("register.html", form=form)
 
 
 @app.route("/logout")
@@ -55,6 +61,7 @@ def add__user():
 def logout():
     logout_user()
     return redirect("/")
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -66,7 +73,7 @@ def index():
 @app.route("/add_post", methods=["GET", "POST"])
 @login_required
 def add_post():
-    add_article(request.form['title'], request.form['content'])
+    add_article(request.form['title'], request.form['content'], flask_login.current_user.get_login())
     return redirect('/')
 
 
@@ -81,7 +88,7 @@ def delete_post(id):
 @app.route("/add_comment/<int:id>", methods=["GET", "POST"])
 @login_required
 def add_comm(id):
-    add_comment(request.form['title'], request.form['content'], id)
+    add_comment(request.form['title'], request.form['content'], id, flask_login.current_user.get_login())
     return redirect('/')
 
 
@@ -97,8 +104,6 @@ def redact_comm(id):
 def delete_comment(art_id, comm_id):
     del_comment(art_id, comm_id)
     return redirect('/')
-
-
 
 
 app.run(port=8888)

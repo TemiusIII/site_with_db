@@ -1,4 +1,5 @@
 import sqlite3
+from werkzeug.security import check_password_hash, generate_password_hash
 
 con = sqlite3.connect("database.sqlite", check_same_thread=False)
 cur = con.cursor()
@@ -12,8 +13,8 @@ def get_comments(arr):
     return cur.execute("SELECT * FROM Comment WHERE Article_id = ?", (arr[0],)).fetchall()
 
 
-def add_article(title, content):
-    cur.execute("INSERT INTO Article(title, content) VALUES (?, ?);", (title, content))
+def add_article(title, content, author):
+    cur.execute("INSERT INTO Article(title, content, Author) VALUES (?, ?, ?);", (title, content, author))
     get_articles()
     con.commit()
 
@@ -25,9 +26,9 @@ def del_article(id):
     get_articles()
 
 
-def add_comment(title, content, id):
-    cur.execute('''INSERT INTO Comment(title, content, Article_id)
-                    VALUES (?,?,?)''', (title, content, id))
+def add_comment(title, content, id, author):
+    cur.execute('''INSERT INTO Comment(title, content, Article_id,Author)
+                    VALUES (?,?,?,?)''', (title, content, id, author))
     con.commit()
 
 
@@ -53,13 +54,12 @@ def del_all_comments(id):
 
 def add_user(login, password):
     cur.execute('''INSERT INTO Users(login, password)
-                    VALUES (?,?)''', (login, password))
+                    VALUES (?,?)''', (login, generate_password_hash(password)))
     con.commit()
 
 
 def check_user(given_password, password):
-    # return check_password_hash(password, given_password)
-    return given_password == password
+    return check_password_hash(password, given_password)
 
 
 def get_login(id):
@@ -90,5 +90,17 @@ def user_exists(id):
 
 
 def get_id(login):
-    return cur.execute('''SELECT id FROM Users
+    temp = cur.execute('''SELECT id FROM Users
+                            WHERE login = ?''', (login,)).fetchone()
+    if temp != None:
+        return cur.execute('''SELECT id FROM Users
                             WHERE login = ?''', (login,)).fetchone()[0]
+
+
+def is_article_author(art_id, usr):
+    temp = cur.execute('''SELECT Author FROM Article
+                        WHERE id == ?''', (art_id,)).fetchone()
+    if temp != None and temp[0] == usr:
+        return True
+    else:
+        return False

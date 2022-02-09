@@ -17,12 +17,16 @@
              aria-labelledby="heading{{article[0]}}">
             <hr>
             <div>
+                <hr>
+                <p>Пост написал {{article[3]}}</p>
+                <hr>
                 <h1>{{article[2]}}</h1>
                 <p>Комментарии:</p>
                 {% for comment in get_comments(article) %}
-                <h2>{{comment[1]}}</h2>
-                <p>{{comment[2]}}</p>
+                <h2>{{comment[4]}}: {{comment[1]}}</h2>
 
+                <p>{{comment[2]}}</p>
+                {% if current_user.is_authenticated and comment[4] == current_user.login %}
                 <h1>
                     <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapse{{comment[0]}}"
@@ -30,6 +34,7 @@
                         Редактировать комментарий
                     </button>
                 </h1>
+                {% endif %}
                 <div class="collapse collapse-horizontal pop_up" id="collapse{{comment[0]}}"
                      aria-labelledby="heading{{comment[0]}}">
                     <form method="POST" action="/redact_comment/{{comment[0]}}">
@@ -41,17 +46,21 @@
                     </form>
                 </div>
                 <hr>
-
+                {% if current_user.is_authenticated and comment[4] == current_user.login %}
                 <form method="POST" action="/delete_comment/{{article[0]}}/{{comment[0]}}">
                     <input type="submit" value="Удалить комментарий">
                 </form>
+
                 <hr>
+                {% endif %}
+
 
             </div>
 
             <div>
 
                 {% endfor %}
+                {% if current_user.is_authenticated %}
                 <div>
                     <p><strong>Добавить комментарий:</strong></p>
                     <form method="POST" action="/add_comment/{{article[0]}}">
@@ -62,12 +71,16 @@
                         <input type="submit" value="Добавить">
                     </form>
                 </div>
-                <hr>
+                 <hr>
+                {% endif %}
+                {% if current_user.is_authenticated and article[3] == current_user.login %}
+
                 <div>
                     <form method="POST" action="/delete_post/{{article[0]}}">
                         <input type="submit" , value="Удалить пост">
                     </form>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -75,6 +88,7 @@
 </div>
 </div>
 <hr>
+{% if current_user.is_authenticated %}
 <div>
     <p><strong>Добавить запись</strong></p>
     <form method="POST" , action="add_post">
@@ -86,14 +100,6 @@
     </form>
 </div>
 
-<div>
-    <p><strong>Добавить юзера(бета)</strong></p>
-    <form method="POST" , action="register">
-        <label for="login">Логин</label>
-        <input name="login" type="text"><br>
-        <label for="password">Пароль</label>
-        <input name="password" type="text">
-        <input type="submit" value="Отправить">
-    </form>
-</div>
+{% endif %}
+
 {% endblock %}
