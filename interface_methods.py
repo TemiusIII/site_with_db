@@ -1,7 +1,5 @@
 import sqlite3
 
-from werkzeug.security import check_password_hash
-
 con = sqlite3.connect("database.sqlite", check_same_thread=False)
 cur = con.cursor()
 
@@ -53,10 +51,44 @@ def del_all_comments(id):
     con.commit()
 
 
+def add_user(login, password):
+    cur.execute('''INSERT INTO Users(login, password)
+                    VALUES (?,?)''', (login, password))
+    con.commit()
+
+
 def check_user(given_password, password):
-    return check_password_hash(given_password, password)
+    # return check_password_hash(password, given_password)
+    return given_password == password
 
 
 def get_login(id):
-    return con.execute('''SELECT * FROM Users)
+    return cur.execute('''SELECT * FROM Users)
                     WHERE id = ?''', (id,)).fetchone()
+
+
+def get_logins():
+    return cur.execute('''SELECT login FROM Users''').fetchall()
+
+
+def get_password(login):
+    return cur.execute('''SELECT password FROM Users
+                            WHERE login = ?''', (login,)).fetchone()[0]
+
+
+def get_user(login):
+    return cur.execute('''SELECT * FROM Users
+                            WHERE login = ?''', (login,)).fetchone()[0]
+
+
+def user_exists(id):
+    if cur.execute('''SELECT login FROM Users 
+                        WHERE id = ?''', (id,)).fetchone() == None:
+        return False
+    else:
+        return True
+
+
+def get_id(login):
+    return cur.execute('''SELECT id FROM Users
+                            WHERE login = ?''', (login,)).fetchone()[0]
